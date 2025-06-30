@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoCOLLECT - Demo Web</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .status {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .status.online {
+            border-left: 5px solid #4CAF50;
+        }
+
+        .status.offline {
+            border-left: 5px solid #f44336;
+        }
+
+        .tabs {
+            display: flex;
+            background: white;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            background: #f5f5f5;
+            border-right: 1px solid #ddd;
+            transition: all 0.3s;
+        }
+
+        .tab:last-child {
+            border-right: none;
+        }
+
+        .tab.active {
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .tab:hover {
+            background: #e8e8e8;
+        }
+
+        .content {
+            background: white;
+            border-radius: 0 0 10px 10px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            min-height: 400px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .form-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            background: #f9f9f9;
+            transition: transform 0.2s;
+        }
+
+        .form-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .form-card p {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin: 2px;
+        }
+
+        .badge.gps {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .badge.photo {
+            background: #2196F3;
+            color: white;
+        }
+
+        .badge.required {
+            background: #ff9800;
+            color: white;
+        }
+
+        .btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+        }
+
+        .btn.secondary {
+            background: #6c757d;
+        }
+
+        .btn.success {
+            background: #28a745;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .map-container {
+            width: 100%;
+            height: 300px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .field-list {
+            list-style: none;
+        }
+
+        .field-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .field-list li:last-child {
+            border-bottom: none;
+        }
+
+        .field-type {
+            font-weight: bold;
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .api-endpoint {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .api-endpoint code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌍 GeoCOLLECT</h1>
+            <p>Sistema de Coleta de Dados Geográficos - Demo Web</p>
+        </div>
+
+        <div class="status online" id="apiStatus">
+            <h3>🟢 API Status: <span id="statusText">Conectando...</span></h3>
+            <p>Servidor: <span id="serverUrl">http://localhost:3001</span> | Última atualização: <span id="lastUpdate">-</span></p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('dashboard')">📊 Dashboard</div>
+            <div class="tab" onclick="showTab('forms')">📋 Formulários</div>
+            <div class="tab" onclick="showTab('data')">💾 Dados</div>
+            <div class="tab" onclick="showTab('map')">🗺️ Mapa</div>
+            <div class="tab" onclick="showTab('api')">🔌 API</div>
+        </div>
+
+        <div class="content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <h2>📊 Dashboard</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <h3 id="totalForms">-</h3>
+                        <p>Formulários</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="totalEntries">-</h3>
+                        <p>Registros</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="completedEntries">-</h3>
+                        <p>Concluídos</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3 id="pendingSync">-</h3>
+                        <p>Pendentes</p>
+                    </div>
+                </div>
+                <button class="btn" onclick="refreshData()">🔄 Atualizar Dados</button>
+                <button class="btn secondary" onclick="testAPI()">🧪 Testar API</button>
+            </div>
+
+            <!-- Forms Tab -->
+            <div id="forms" class="tab-content">
+                <h2>📋 Formulários Disponíveis</h2>
+                <button class="btn" onclick="loadForms()">📥 Carregar Formulários</button>
+                <button class="btn success" onclick="createForm()">➕ Criar Formulário</button>
+                <div id="formsContainer" class="form-container">
+                    <div class="loading" id="formsLoading">
+                        <div class="spinner"></div>
+                        <p>Carregando formulários...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Tab -->
+            <div id="data" class="tab-content">
+                <h2>💾 Dados Coletados</h2>
+                <button class="btn" onclick="loadData()">📥 Carregar Dados</button>
+                <button class="btn success" onclick="simulateDataCollection()">📍 Simular Coleta</button>
+                <div id="dataContainer">
+                    <div class="loading" id="dataLoading">
+                        <div class="spinner"></div>
+                        <p>Carregando dados...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map Tab -->
+            <div id="map" class="tab-content">
+                <h2>🗺️ Visualização no Mapa</h2>
+                <p>Localização dos dados coletados:</p>
+                <div class="map-container">
+                    <div style="text-align: center;">
+                        <h3>🗺️ Mapa Interativo</h3>
+                        <p>Brasília, DF - Brasil</p>
+                        <p>📍 Lat: -15.7801, Lng: -47.8292</p>
+                        <button class="btn" onclick="showMapDetails()">Ver Detalhes</button>
+                    </div>
+                </div>
+                <p><strong>Funcionalidades do Mapa (no app móvel):</strong></p>
+                <ul>
+                    <li>📍 Visualização de todos os pontos coletados</li>
+                    <li>🎨 Marcadores coloridos por tipo de formulário</li>
+                    <li>📋 Detalhes ao tocar nos marcadores</li>
+                    <li>🗺️ Mapas offline para uso sem internet</li>
+                </ul>
+            </div>
+
+            <!-- API Tab -->
+            <div id="api" class="tab-content">
+                <h2>🔌 API do GeoCOLLECT</h2>
+                <div class="api-endpoint">
+                    <strong>GET /health</strong><br>
+                    <code>curl http://localhost:3001/health</code><br>
+                    Status da API
+                </div>
+                <div class="api-endpoint">
+                    <strong>GET /api/forms</strong><br>
+                    <code>curl http://localhost:3001/api/forms</code><br>
+                    Listar todos os formulários
+                </div>
+                <div class="api-endpoint">
+                    <strong>POST /api/forms</strong><br>
+                    <code>curl -X POST http://localhost:3001/api/forms -d '{...}'</code><br>
+                    Criar novo formulário
+                </div>
+                <div class="api-endpoint">
+                    <strong>GET /api/data</strong><br>
+                    <code>curl http://localhost:3001/api/data</code><br>
+                    Listar dados coletados
+                </div>
+                <div class="api-endpoint">
+                    <strong>GET /api/stats</strong><br>
+                    <code>curl http://localhost:3001/api/stats</code><br>
+                    Estatísticas do sistema
+                </div>
+                <button class="btn" onclick="testAllEndpoints()">🧪 Testar Todos os Endpoints</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:3001';
+        let currentData = {};
+
+        // Tab Management
+        function showTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Load data for specific tabs
+            if (tabName === 'forms') loadForms();
+            if (tabName === 'data') loadData();
+        }
+
+        // API Functions
+        async function apiCall(endpoint) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                updateStatus('offline', 'Erro de conexão');
+                throw error;
+            }
+        }
+
+        async function refreshData() {
+            try {
+                const stats = await apiCall('/api/stats');
+                currentData.stats = stats;
+                
+                document.getElementById('totalForms').textContent = stats.totalForms;
+                document.getElementById('totalEntries').textContent = stats.totalEntries;
+                document.getElementById('completedEntries').textContent = stats.completedEntries;
+                document.getElementById('pendingSync').textContent = stats.pendingSync;
+                
+                updateStatus('online', 'Conectado');
+            } catch (error) {
+                updateStatus('offline', 'Erro ao carregar dados');
+            }
+        }
+
+        async function loadForms() {
+            const container = document.getElementById('formsContainer');
+            const loading = document.getElementById('formsLoading');
+            
+            loading.style.display = 'block';
+            container.innerHTML = '';
+            container.appendChild(loading);
+
+            try {
+                const forms = await apiCall('/api/forms');
+                currentData.forms = forms;
+                
+                loading.style.display = 'none';
+                container.innerHTML = '';
+
+                forms.forEach(form => {
+                    const formCard = document.createElement('div');
+                    formCard.className = 'form-card';
+                    
+                    const badges = [];
+                    if (form.requireGPS) badges.push('<span class="badge gps">GPS</span>');
+                    if (form.requirePhotos) badges.push('<span class="badge photo">Foto</span>');
+                    
+                    formCard.innerHTML = `
+                        <h3>${form.title}</h3>
+                        <p>${form.description}</p>
+                        <p><strong>Campos:</strong> ${form.fields.length}</p>
+                        <p><strong>Categoria:</strong> ${form.category || 'Geral'}</p>
+                        <div>${badges.join('')}</div>
+                        <ul class="field-list">
+                            ${form.fields.slice(0, 3).map(field => 
+                                `<li><span class="field-type">${field.type}</span>${field.label}${field.required ? ' <span class="badge required">Obrigatório</span>' : ''}</li>`
+                            ).join('')}
+                            ${form.fields.length > 3 ? `<li><em>... e mais ${form.fields.length - 3} campos</em></li>` : ''}
+                        </ul>
+                    `;
+                    
+                    container.appendChild(formCard);
+                });
+
+                if (forms.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; padding: 40px;">Nenhum formulário encontrado.</p>';
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: red;">Erro ao carregar formulários.</p>';
+            }
+        }
+
+        async function loadData() {
+            const container = document.getElementById('dataContainer');
+            const loading = document.getElementById('dataLoading');
+            
+            loading.style.display = 'block';
+
+            try {
+                const data = await apiCall('/api/data');
+                currentData.entries = data;
+                
+                loading.style.display = 'none';
+                
+                container.innerHTML = `
+                    <h3>Registros Encontrados: ${data.length}</h3>
+                    ${data.map(entry => `
+                        <div class="form-card">
+                            <h4>Registro: ${entry.id.substring(0, 8)}...</h4>
+                            <p><strong>Formulário ID:</strong> ${entry.formId.substring(0, 8)}...</p>
+                            <p><strong>Status:</strong> ${entry.status}</p>
+                            <p><strong>Localização:</strong> ${entry.latitude}, ${entry.longitude}</p>
+                            <p><strong>Precisão:</strong> ${entry.accuracy}m</p>
+                            <p><strong>Data:</strong> ${new Date(entry.timestamp).toLocaleString('pt-BR')}</p>
+                            <p><strong>Valores:</strong> ${entry.values ? entry.values.length : 0} campos preenchidos</p>
+                        </div>
+                    `).join('')}
+                `;
+
+                if (data.length === 0) {
+                    container.innerHTML = '<p style="text-align: center; padding: 40px;">Nenhum dado coletado ainda.</p>';
+                }
+            } catch (error) {
+                loading.style.display = 'none';
+                container.innerHTML = '<p style="text-align: center; padding: 40px; color: red;">Erro ao carregar dados.</p>';
+            }
+        }
+
+        async function testAPI() {
+            try {
+                const health = await apiCall('/health');
+                alert(`✅ API funcionando!\n\nStatus: ${health.status}\nMensagem: ${health.message}\nVersão: ${health.version}`);
+            } catch (error) {
+                alert('❌ Erro ao conectar com a API!\n\nVerifique se o servidor está rodando em http://localhost:3001');
+            }
+        }
+
+        async function createForm() {
+            const formData = {
+                title: "Formulário de Teste",
+                description: "Criado via demo web",
+                category: "Demo",
+                requireGPS: true,
+                requirePhotos: false,
+                fields: [
+                    {
+                        name: "nome",
+                        label: "Nome do Usuário",
+                        type: "text",
+                        required: true,
+                        order: 1
+                    },
+                    {
+                        name: "email",
+                        label: "Email",
+                        type: "email",
+                        required: true,
+                        order: 2
+                    },
+                    {
+                        name: "observacoes",
+                        label: "Observações",
+                        type: "textarea",
+                        required: false,
+                        order: 3
+                    }
+                ]
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/forms`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const newForm = await response.json();
+                alert(`✅ Formulário criado com sucesso!\nID: ${newForm.id}\nTítulo: ${newForm.title}`);
+                
+                // Recarregar formulários
+                loadForms();
+                refreshData();
+            } catch (error) {
+                alert('❌ Erro ao criar formulário!');
+            }
+        }
+
+        async function simulateDataCollection() {
+            const dataEntry = {
+                formId: currentData.forms && currentData.forms[0] ? currentData.forms[0].id : "demo-form-id",
+                userId: "web-demo-user",
+                status: "completed",
+                deviceId: "web-browser",
+                latitude: -15.7801 + (Math.random() - 0.5) * 0.01,
+                longitude: -47.8292 + (Math.random() - 0.5) * 0.01,
+                accuracy: Math.random() * 10 + 2,
+                values: [
+                    {
+                        fieldName: "nome",
+                        value: "Usuário Demo " + Math.floor(Math.random() * 1000)
+                    },
+                    {
+                        fieldName: "observacoes",
+                        value: "Dados coletados via demo web em " + new Date().toLocaleString('pt-BR')
+                    }
+                ]
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/data`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(dataEntry)
+                });
+
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const newEntry = await response.json();
+                alert(`✅ Dados coletados com sucesso!\nID: ${newEntry.id}\nLocalização: ${newEntry.latitude}, ${newEntry.longitude}`);
+                
+                // Recarregar dados
+                loadData();
+                refreshData();
+            } catch (error) {
+                alert('❌ Erro ao simular coleta de dados!');
+            }
+        }
+
+        function showMapDetails() {
+            alert(`🗺️ Funcionalidades do Mapa no App:\n\n📍 Visualização de pontos coletados\n🎨 Marcadores coloridos por categoria\n📋 Detalhes ao tocar nos pontos\n🗺️ Suporte a mapas offline\n📊 Filtros por formulário\n📱 Interface touch otimizada`);
+        }
+
+        async function testAllEndpoints() {
+            const endpoints = ['/health', '/api/stats', '/api/forms', '/api/data', '/api/sync/status'];
+            let results = [];
+
+            for (const endpoint of endpoints) {
+                try {
+                    await apiCall(endpoint);
+                    results.push(`✅ ${endpoint} - OK`);
+                } catch (error) {
+                    results.push(`❌ ${endpoint} - Erro`);
+                }
+            }
+
+            alert(`🧪 Teste de Endpoints:\n\n${results.join('\n')}`);
+        }
+
+        function updateStatus(status, message) {
+            const statusElement = document.getElementById('apiStatus');
+            const statusText = document.getElementById('statusText');
+            const lastUpdate = document.getElementById('lastUpdate');
+            
+            statusElement.className = `status ${status}`;
+            statusText.textContent = message;
+            lastUpdate.textContent = new Date().toLocaleString('pt-BR');
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            refreshData();
+            
+            // Auto-refresh every 30 seconds
+            setInterval(refreshData, 30000);
+        });
+    </script>
+</body>
+</html>
